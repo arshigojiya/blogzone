@@ -1,0 +1,156 @@
+/* Category Card Styles */
+.category-card {
+  position: relative;
+  min-width: 260px;
+  width: 260px;
+  height: 300px;
+  border-radius: 4px;
+  overflow: hidden;
+  cursor: pointer;
+  border: 1px solid #e5e7eb;
+  transition: border-color 0.2s;
+  background: white;
+}
+
+.category-card:hover {
+  border-color: #9ca3af;
+}
+
+.category-card.active {
+  border-color: #2563eb;
+  border-width: 2px;
+}
+
+.card-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.card-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.3);
+  z-index: 1;
+}
+
+.card-gradient {
+  display: none;
+}
+
+.card-content {
+  position: relative;
+  z-index: 3;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 1.5rem;
+  color: white;
+}
+
+.category-icon {
+  font-size: 3rem;
+  margin-bottom: 0.75rem;
+}
+
+.category-name {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  line-height: 1.2;
+}
+
+.category-description {
+  font-size: 0.875rem;
+  opacity: 0.9;
+  line-height: 1.5;
+  margin-bottom: 1rem;
+}
+
+.category-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.category-count {
+  font-size: 0.875rem;
+  font-weight: 500;
+  opacity: 0.9;
+}
+
+.arrow-icon {
+  font-size: 1.25rem;
+  opacity: 0.8;
+  transition: opacity 0.2s;
+}
+
+.category-card:hover .arrow-icon {
+  opacity: 1;
+}
+
+.active-indicator {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: #2563eb;
+  z-index: 4;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .category-card {
+    min-width: 240px;
+    width: 240px;
+    height: 280px;
+  }
+
+  .card-content {
+    padding: 1.25rem;
+  }
+
+  .category-icon {
+    font-size: 2.5rem;
+  }
+
+  .category-name {
+    font-size: 1.25rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .category-card {
+    min-width: 220px;
+    width: 220px;
+    height: 260px;
+  }
+
+  .card-content {
+    padding: 1rem;
+  }
+
+  .category-icon {
+    font-size: 2rem;
+  }
+
+  .category-name {
+    font-size: 1.125rem;
+  }
+
+  .category-description {
+    font-size: 0.8125rem;
+  }
+}
