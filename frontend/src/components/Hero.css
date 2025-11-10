@@ -265,6 +265,20 @@
   display: none;
 }
 
+/* Loading State */
+.loading-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  color: #6b7280;
+  font-size: 1rem;
+}
+
+.loading-state p {
+  margin: 0;
+}
+
 /* Responsive Design */
 @media (max-width: 1200px) {
   .slider-button.prev {

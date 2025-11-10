@@ -1,6 +1,7 @@
 const express = require('express');
 const User = require('../models/User');
 const { auth, adminAuth } = require('../middleware/auth');
+const { processUserProfile, getAvatarUrl } = require('../utils/imageUrl');
 
 const router = express.Router();
 
@@ -17,8 +18,11 @@ router.get('/', auth, adminAuth, async (req, res) => {
 
     const total = await User.countDocuments();
 
+    // Process users to include full URLs for avatars
+    const processedUsers = users.map(user => processUserProfile(user));
+
     res.json({
-      users,
+      users: processedUsers,
       totalPages: Math.ceil(total / limit),
       currentPage: page,
       total,
@@ -35,7 +39,9 @@ router.get('/:id', auth, adminAuth, async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
-    res.json(user);
+    // Process user to include full URLs for avatar
+    const processedUser = processUserProfile(user);
+    res.json(processedUser);
   } catch (error) {
     res.status(500).json({ message: 'Server error' });
   }
@@ -78,22 +84,26 @@ router.put('/:id', auth, adminAuth, async (req, res) => {
     if (avatar) {
       user.profile.avatar = {
         filename: avatar.filename,
-        path: avatar.path,
+        path: avatar.path || `/api/uploads/avatars/${avatar.filename}`,
         originalName: avatar.originalName,
+        url: avatar.url || getAvatarUrl(avatar.filename),
       };
     }
 
     await user.save();
 
+    // Process user to include full URLs for avatar
+    const processedUser = processUserProfile(user);
+
     res.json({
       message: 'User updated successfully',
       user: {
-        id: user._id,
-        username: user.username,
-        email: user.email,
-        role: user.role,
-        profile: user.profile,
-        createdAt: user.createdAt,
+        id: processedUser._id,
+        username: processedUser.username,
+        email: processedUser.email,
+        role: processedUser.role,
+        profile: processedUser.profile,
+        createdAt: processedUser.createdAt,
       },
     });
   } catch (error) {
@@ -178,23 +188,27 @@ router.post('/', auth, adminAuth, async (req, res) => {
         lastName,
         avatar: avatar ? {
           filename: avatar.filename,
-          path: avatar.path,
+          path: avatar.path || `/api/uploads/avatars/${avatar.filename}`,
           originalName: avatar.originalName,
+          url: avatar.url || getAvatarUrl(avatar.filename),
         } : undefined,
       },
     });
 
     await user.save();
 
+    // Process user to include full URLs for avatar
+    const processedUser = processUserProfile(user);
+
     res.status(201).json({
       message: 'User created successfully',
       user: {
-        id: user._id,
-        username: user.username,
-        email: user.email,
-        role: user.role,
-        profile: user.profile,
-        createdAt: user.createdAt,
+        id: processedUser._id,
+        username: processedUser.username,
+        email: processedUser.email,
+        role: processedUser.role,
+        profile: processedUser.profile,
+        createdAt: processedUser.createdAt,
       },
     });
   } catch (error) {

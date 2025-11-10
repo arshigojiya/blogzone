@@ -2,6 +2,7 @@ const express = require('express');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const { auth } = require('../middleware/auth');
+const { processUserProfile, getAvatarUrl } = require('../utils/imageUrl');
 
 const router = express.Router();
 
@@ -26,6 +27,9 @@ router.post('/register', async (req, res) => {
 
     await user.save();
 
+    // Process user to include full URLs for avatar
+    const processedUser = processUserProfile(user);
+
     // Generate token
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET || 'your-secret-key', {
       expiresIn: '7d',
@@ -34,11 +38,11 @@ router.post('/register', async (req, res) => {
     res.status(201).json({
       token,
       user: {
-        id: user._id,
-        username: user.username,
-        email: user.email,
-        role: user.role,
-        profile: user.profile,
+        id: processedUser._id,
+        username: processedUser.username,
+        email: processedUser.email,
+        role: processedUser.role,
+        profile: processedUser.profile,
       },
     });
   } catch (error) {
@@ -63,6 +67,9 @@ router.post('/login', async (req, res) => {
       return res.status(400).json({ message: 'Invalid credentials' });
     }
 
+    // Process user to include full URLs for avatar
+    const processedUser = processUserProfile(user);
+
     // Generate token
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET || 'your-secret-key', {
       expiresIn: '7d',
@@ -71,11 +78,11 @@ router.post('/login', async (req, res) => {
     res.json({
       token,
       user: {
-        id: user._id,
-        username: user.username,
-        email: user.email,
-        role: user.role,
-        profile: user.profile,
+        id: processedUser._id,
+        username: processedUser.username,
+        email: processedUser.email,
+        role: processedUser.role,
+        profile: processedUser.profile,
       },
     });
   } catch (error) {
@@ -87,7 +94,9 @@ router.post('/login', async (req, res) => {
 router.get('/profile', auth, async (req, res) => {
   try {
     const user = await User.findById(req.user._id).select('-password');
-    res.json(user);
+    // Process user to include full URLs for avatar
+    const processedUser = processUserProfile(user);
+    res.json(processedUser);
   } catch (error) {
     res.status(500).json({ message: 'Server error' });
   }
@@ -104,11 +113,16 @@ router.put('/profile', auth, async (req, res) => {
       firstName: firstName || user.profile.firstName,
       lastName: lastName || user.profile.lastName,
       bio: bio || user.profile.bio,
-      avatar: avatar || user.profile.avatar
+      avatar: avatar ? {
+        ...avatar,
+        url: avatar.url || (avatar.filename ? getAvatarUrl(avatar.filename) : user.profile.avatar?.url)
+      } : user.profile.avatar
     };
     await user.save();
 
-    res.json(user);
+    // Process user to include full URLs for avatar
+    const processedUser = processUserProfile(user);
+    res.json(processedUser);
   } catch (error) {
     res.status(500).json({ message: 'Server error' });
   }

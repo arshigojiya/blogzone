@@ -19,14 +19,14 @@ function Categories() {
 
   const loadData = async () => {
     try {
-      const [categoriesData, blogsData] = await Promise.all([
+      const [categoriesData, blogsResponse] = await Promise.all([
         apiService.getCategories(),
-        apiService.getBlogs()
+        apiService.getBlogs({ limit: 100, status: 'published' })
       ])
-      console.log('Categories data:', categoriesData)
-      console.log('Blogs data:', blogsData)
+      // Backend returns { blogs, total, ... } structure
+      const blogsArray = blogsResponse?.blogs || blogsResponse || []
       setCategories(Array.isArray(categoriesData) ? categoriesData : [])
-      setBlogs(Array.isArray(blogsData) ? blogsData : [])
+      setBlogs(Array.isArray(blogsArray) ? blogsArray : [])
     } catch (error) {
       console.error('Failed to load data:', error)
       setCategories([])
@@ -38,7 +38,7 @@ function Categories() {
 
   const handleCategoryClick = (category) => {
     setSelectedCategory(category.slug)
-    navigate(`/blogs?category=${category.name}`)
+    navigate(`/blogs?category=${category.slug || category.name}`)
   }
 
   const getCategoryBlogs = (categoryName) => {
@@ -121,20 +121,40 @@ function Categories() {
                   <div className="category-preview">
                     <h3 className="preview-title">Recent Posts</h3>
                     <div className="preview-blogs">
-                      {categoryBlogs.slice(0, 3).map((blog) => (
-                        <div key={blog._id} className="preview-item">
-                          <img src={blog.featuredImage} alt={blog.title} />
-                          <div className="preview-content">
-                            <h4>{blog.title}</h4>
-                            <span>{blog.readTime || '5 min read'}</span>
+                      {categoryBlogs.slice(0, 3).map((blog) => {
+                        const getBlogImageUrl = (blog) => {
+                          if (blog.featuredImage) return blog.featuredImage
+                          if (blog.images && blog.images.length > 0 && blog.images[0]?.url) {
+                            return blog.images[0].url
+                          }
+                          return '/placeholder.jpg'
+                        }
+                        return (
+                          <div key={blog._id} className="preview-item">
+                            <img 
+                              src={getBlogImageUrl(blog)} 
+                              alt={blog.title}
+                              onError={(e) => {
+                                e.target.src = '/placeholder.jpg'
+                              }}
+                            />
+                            <div className="preview-content">
+                              <h4>{blog.title}</h4>
+                              <span>
+                                {blog.content 
+                                  ? `${Math.ceil(blog.content.split(/\s+/).length / 200)} min read`
+                                  : '5 min read'
+                                }
+                              </span>
+                            </div>
                           </div>
-                        </div>
-                      ))}
+                        )
+                      })}
                     </div>
                     {categoryBlogs.length > 3 && (
                       <button
                         className="view-all-btn"
-                        onClick={() => navigate(`/blogs?category=${category.name}`)}
+                        onClick={() => navigate(`/blogs?category=${category.slug || category.name}`)}
                       >
                         View All {categoryBlogs.length} Posts
                       </button>

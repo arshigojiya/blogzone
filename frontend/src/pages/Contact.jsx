@@ -120,28 +120,7 @@ function Contact() {
               })}
             </div>
 
-            <div className="social-section">
-              <h3 className="social-title">Follow Us</h3>
-              <div className="social-links">
-                {socialLinks.map((social, index) => {
-                  const Icon = social.icon
-                  return (
-                    <motion.a
-                      key={index}
-                      href={social.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="social-link"
-                      whileHover={{ scale: 1.15, y: -5 }}
-                      whileTap={{ scale: 0.9 }}
-                      aria-label={social.name}
-                    >
-                      <Icon className="social-icon" />
-                    </motion.a>
-                  )
-                })}
-              </div>
-            </div>
+            
           </motion.div>
 
           {/* Contact Form */}

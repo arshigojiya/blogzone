@@ -101,6 +101,13 @@ export function AuthProvider({ children }) {
     }
   }
 
+  const refreshUser = () => {
+    const savedUser = localStorage.getItem('blogzone_user')
+    if (savedUser) {
+      setUser(JSON.parse(savedUser))
+    }
+  }
+
   const getAuthHeaders = () => {
     const token = localStorage.getItem('blogzone_token')
     return {
@@ -115,6 +122,7 @@ export function AuthProvider({ children }) {
     register,
     logout,
     updateUser,
+    refreshUser,
     loading,
     isAdmin: user?.role === 'admin',
     isUser: user?.role === 'user',

@@ -14,6 +14,31 @@ function AdminDashboard() {
     loadDashboardData()
   }, [])
 
+  // Helper function to get blog image URL
+  // Backend now returns full URLs, so we use them directly
+  const getBlogImageUrl = (blog) => {
+    if (blog.featuredImage) {
+      // Backend returns full URL
+      return blog.featuredImage
+    }
+    if (blog.images && blog.images.length > 0) {
+      const firstImage = blog.images[0]
+      // Backend returns full URL in url field
+      if (firstImage.url) {
+        return firstImage.url
+      }
+      // Fallback for old data
+      if (firstImage.path && firstImage.path.startsWith('http')) {
+        return firstImage.path
+      }
+      if (firstImage.filename) {
+        const baseUrl = import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:5000'
+        return `${baseUrl}/api/uploads/blogs/${firstImage.filename}`
+      }
+    }
+    return '/placeholder.jpg'
+  }
+
   const loadDashboardData = async () => {
     try {
       setLoading(true)
@@ -178,7 +203,7 @@ function AdminDashboard() {
                 >
                   <td>
                     <div className="blog-title-cell">
-                      <img src={blog.featuredImage || blog.image || '/placeholder.jpg'} alt={blog.title} />
+                      <img src={getBlogImageUrl(blog)} alt={blog.title} />
                       <span>{blog.title}</span>
                     </div>
                   </td>

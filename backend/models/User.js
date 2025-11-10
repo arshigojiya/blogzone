@@ -29,6 +29,7 @@ const userSchema = new mongoose.Schema({
       filename: String,
       path: String,
       originalName: String,
+      url: String,
       uploadedAt: {
         type: Date,
         default: Date.now,

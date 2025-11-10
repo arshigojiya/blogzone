@@ -3,6 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const { auth } = require('../middleware/auth');
 const { uploadBlogImage, uploadAvatar, uploadCategoryImage, uploadMultiple } = require('../middleware/upload');
+const { getBlogImageUrl, getAvatarUrl, getCategoryImageUrl } = require('../utils/imageUrl');
 
 const router = express.Router();
 
@@ -18,7 +19,7 @@ router.post('/blog-featured', auth, uploadBlogImage.single('featuredImage'), (re
       return res.status(400).json({ message: 'No file uploaded' });
     }
 
-    const fileUrl = `${req.protocol}://${req.get('host')}/api/uploads/blogs/${req.file.filename}`;
+    const fileUrl = getBlogImageUrl(req.file.filename);
 
     res.json({
       message: 'File uploaded successfully',
@@ -27,7 +28,7 @@ router.post('/blog-featured', auth, uploadBlogImage.single('featuredImage'), (re
         originalName: req.file.originalname,
         size: req.file.size,
         url: fileUrl,
-        path: req.file.path,
+        path: `/api/uploads/blogs/${req.file.filename}`,
       }
     });
   } catch (error) {
@@ -46,8 +47,8 @@ router.post('/blog-images', auth, uploadMultiple.array('images', 10), (req, res)
       filename: file.filename,
       originalName: file.originalname,
       size: file.size,
-      url: `${req.protocol}://${req.get('host')}/api/uploads/blogs/${file.filename}`,
-      path: file.path,
+      url: getBlogImageUrl(file.filename),
+      path: `/api/uploads/blogs/${file.filename}`,
     }));
 
     res.json({
@@ -66,7 +67,7 @@ router.post('/avatar', auth, uploadAvatar.single('avatar'), (req, res) => {
       return res.status(400).json({ message: 'No file uploaded' });
     }
 
-    const fileUrl = `${req.protocol}://${req.get('host')}/api/uploads/avatars/${req.file.filename}`;
+    const fileUrl = getAvatarUrl(req.file.filename);
 
     res.json({
       message: 'Avatar uploaded successfully',
@@ -75,7 +76,7 @@ router.post('/avatar', auth, uploadAvatar.single('avatar'), (req, res) => {
         originalName: req.file.originalname,
         size: req.file.size,
         url: fileUrl,
-        path: req.file.path,
+        path: `/api/uploads/avatars/${req.file.filename}`,
       }
     });
   } catch (error) {
@@ -90,7 +91,7 @@ router.post('/category-image', auth, uploadCategoryImage.single('categoryImage')
       return res.status(400).json({ message: 'No file uploaded' });
     }
 
-    const fileUrl = `${req.protocol}://${req.get('host')}/api/uploads/categories/${req.file.filename}`;
+    const fileUrl = getCategoryImageUrl(req.file.filename);
 
     res.json({
       message: 'Category image uploaded successfully',
@@ -99,7 +100,7 @@ router.post('/category-image', auth, uploadCategoryImage.single('categoryImage')
         originalName: req.file.originalname,
         size: req.file.size,
         url: fileUrl,
-        path: req.file.path,
+        path: `/api/uploads/categories/${req.file.filename}`,
       }
     });
   } catch (error) {

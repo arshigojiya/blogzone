@@ -1,9 +1,9 @@
 import { motion } from 'framer-motion'
-import { 
-  FiGithub, 
-  FiTwitter, 
-  FiLinkedin, 
-  FiMail, 
+import {
+  FiGithub,
+  FiTwitter,
+  FiLinkedin,
+  FiMail,
   FiGlobe,
   FiCode,
   FiBook,
@@ -16,14 +16,8 @@ function AuthorIntro() {
     {
       name: 'GitHub',
       icon: FiGithub,
-      url: 'https://github.com',
+      url: 'https://github.com/arshigojiya/',
       color: '#333'
-    },
-    {
-      name: 'Twitter',
-      icon: FiTwitter,
-      url: 'https://twitter.com',
-      color: '#1DA1F2'
     },
     {
       name: 'LinkedIn',
@@ -34,13 +28,13 @@ function AuthorIntro() {
     {
       name: 'Email',
       icon: FiMail,
-      url: 'mailto:author@blogzone.com',
+      url: 'mailto:arshigojiya526@gmail.com',
       color: '#10b981'
     },
     {
       name: 'Website',
       icon: FiGlobe,
-      url: 'https://blogzone.com',
+      url: 'http://arshi.krushnam.cloud',
       color: '#6366f1'
     }
   ]
@@ -108,7 +102,7 @@ function AuthorIntro() {
           >
             <div className="image-border">
               <img
-                src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=faces"
+                src="photo.jpg"
                 alt="Author"
                 className="author-image"
               />
@@ -135,18 +129,18 @@ function AuthorIntro() {
             className="author-info"
             variants={itemVariants}
           >
-            <h3 className="author-name">Alex Thompson</h3>
+            <h3 className="author-name">Arshi Gojiya</h3>
             <p className="author-title">Full Stack Developer & Tech Writer</p>
-            
+
             <div className="author-bio">
               <p>
-                Welcome to BlogZone! I'm a passionate full-stack developer with over 8 years of experience 
-                in building modern web applications. I love sharing my knowledge about web development, 
+                Welcome to BlogZone! I'm a passionate full-stack developer with over 8 years of experience
+                in building modern web applications. I love sharing my knowledge about web development,
                 design patterns, and the latest technologies.
               </p>
               <p>
-                Through this blog, I aim to help fellow developers learn, grow, and stay updated with 
-                the ever-evolving world of technology. Whether you're a beginner or an experienced developer, 
+                Through this blog, I aim to help fellow developers learn, grow, and stay updated with
+                the ever-evolving world of technology. Whether you're a beginner or an experienced developer,
                 you'll find valuable insights, tutorials, and best practices here.
               </p>
             </div>
@@ -175,25 +169,47 @@ function AuthorIntro() {
               <h4 className="social-title">Connect With Me</h4>
               <div className="social-links">
                 {socialLinks.map((social, index) => {
-                  const Icon = social.icon
+                  const Icon = social.icon;
                   return (
                     <motion.a
                       key={index}
                       href={social.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="social-link"
                       whileHover={{ scale: 1.15, y: -5 }}
                       whileTap={{ scale: 0.9 }}
                       initial={{ opacity: 0, scale: 0 }}
                       animate={{ opacity: 1, scale: 1 }}
                       transition={{ delay: 0.3 + index * 0.1 }}
-                      style={{ '--social-color': social.color }}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "0.5rem",
+                        textDecoration: "none",
+                        padding: "0.6rem 1rem",
+                        borderRadius: "8px",
+                        background: "#fff",
+                        border: "1px solid #e5e7eb",
+                        color: social.color,
+                        fontWeight: 500,
+                        transition: "all 0.2s ease",
+                        boxShadow: "0 1px 4px rgba(0,0,0,0.05)",
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = social.color;
+                        e.currentTarget.style.color = "#fff";
+                        e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,0.15)";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = "#fff";
+                        e.currentTarget.style.color = social.color;
+                        e.currentTarget.style.boxShadow = "0 1px 4px rgba(0,0,0,0.05)";
+                      }}
                     >
-                      <Icon className="social-icon" />
-                      <span className="social-name">{social.name}</span>
+                      <Icon style={{ fontSize: "1.25rem" }} />
+                      <span>{social.name}</span>
                     </motion.a>
-                  )
+                  );
                 })}
               </div>
             </div>

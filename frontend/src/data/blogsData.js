@@ -67,7 +67,7 @@ export const blogsData = [
   {
     id: 6,
     title: "JavaScript Performance Optimization Techniques",
-    author: "Alex Thompson",
+    author: "Arshi Gojiya",
     date: "2024-01-03",
     category: "Technology",
     readTime: "14 min read",

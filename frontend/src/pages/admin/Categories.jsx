@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { FiPlus, FiEdit, FiTrash2, FiSearch, FiUpload } from 'react-icons/fi'
+import { FiPlus, FiEdit, FiTrash2, FiSearch, FiUpload, FiX, FiImage } from 'react-icons/fi'
 import { apiService } from '../../services/api'
 import './AdminPages.css'
 
@@ -19,6 +19,8 @@ function AdminCategories() {
     color: '#10b981'
   })
   const [uploading, setUploading] = useState(false)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [categoryToDelete, setCategoryToDelete] = useState(null)
 
   // Load categories on component mount
   useEffect(() => {
@@ -60,15 +62,23 @@ function AdminCategories() {
     setShowAddModal(true)
   }
 
-  const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete this category?')) {
-      try {
-        await apiService.deleteCategory(id)
-        setCategories(categories.filter(cat => cat._id !== id))
-      } catch (error) {
-        console.error('Failed to delete category:', error)
-        alert('Failed to delete category')
-      }
+  const handleDelete = (category) => {
+    setCategoryToDelete(category)
+    setShowDeleteModal(true)
+  }
+
+  const confirmDelete = async () => {
+    if (!categoryToDelete) return
+    try {
+      await apiService.deleteCategory(categoryToDelete._id)
+      setCategories(categories.filter(cat => cat._id !== categoryToDelete._id))
+      setShowDeleteModal(false)
+      setCategoryToDelete(null)
+    } catch (error) {
+      console.error('Failed to delete category:', error)
+      alert('Failed to delete category')
+      setShowDeleteModal(false)
+      setCategoryToDelete(null)
     }
   }
 
@@ -153,10 +163,10 @@ function AdminCategories() {
                 <div className="category-overlay" style={{ background: `${category.color}80` }} />
                 <div className="category-icon">{category.icon}</div>
                 <div className="category-actions">
-                  <button onClick={() => handleEdit(category)} >
+                  <button onClick={() => handleEdit(category)} className="edit-btn" title="Edit Category">
                     <FiEdit />
                   </button>
-                  <button onClick={() => handleDelete(category._id)}>
+                  <button onClick={() => handleDelete(category)} className="delete-btn" title="Delete Category">
                     <FiTrash2 />
                   </button>
                 </div>
@@ -185,6 +195,27 @@ function AdminCategories() {
           >
             <h2 className="modal-title">{editingCategory ? 'Edit Category' : 'Add New Category'}</h2>
             <form onSubmit={handleSubmit} className="category-form">
+              {/* Category Image Preview at Top */}
+              {formData.image && (
+                <div className="form-group featured-image-preview">
+                  <label>Category Image</label>
+                  <div className="featured-image-container">
+                    <img 
+                      src={formData.image} 
+                      alt="Category preview" 
+                      className="featured-preview-img"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setFormData({ ...formData, image: '' })}
+                      className="remove-featured-btn"
+                    >
+                      <FiX />
+                    </button>
+                  </div>
+                </div>
+              )}
+
               <div className="form-group">
                 <label>Name</label>
                 <input
@@ -246,20 +277,9 @@ function AdminCategories() {
                   />
                   <label htmlFor="image-upload" className="upload-btn">
                     <FiUpload />
-                    {uploading ? 'Uploading...' : 'Upload Image'}
+                    {uploading ? 'Uploading...' : formData.image ? 'Change Image' : 'Upload Image'}
                   </label>
-                  {formData.image && (
-                    <div className="image-preview">
-                      <img src={formData.image} alt="Preview" />
-                      <button
-                        type="button"
-                        onClick={() => setFormData({ ...formData, image: '' })}
-                        className="remove-image-btn"
-                      >
-                        Remove
-                      </button>
-                    </div>
-                  )}
+                  {uploading && <p className="uploading-text">Uploading image...</p>}
                 </div>
               </div>
               <div className="modal-actions">
@@ -271,6 +291,54 @@ function AdminCategories() {
                 </button>
               </div>
             </form>
+          </motion.div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && categoryToDelete && (
+        <div className="modal-overlay" onClick={() => {
+          setShowDeleteModal(false)
+          setCategoryToDelete(null)
+        }}>
+          <motion.div
+            className="modal-content"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 className="modal-title">Confirm Delete</h2>
+            <div className="delete-confirmation-content">
+              <p>Are you sure you want to delete the category <strong>"{categoryToDelete.name}"</strong>?</p>
+              <p className="delete-warning">This action cannot be undone. All blogs in this category will need to be reassigned.</p>
+              {categoryToDelete.image && (
+                <div className="blog-preview-delete">
+                  <img src={categoryToDelete.image} alt={categoryToDelete.name} />
+                </div>
+              )}
+              {categoryToDelete.blogsCount > 0 && (
+                <div className="category-blogs-warning">
+                  <p style={{ color: '#d97706', fontWeight: 500 }}>
+                    ⚠️ This category has {categoryToDelete.blogsCount} blog(s) associated with it.
+                  </p>
+                </div>
+              )}
+            </div>
+            <div className="modal-actions">
+              <button
+                className="cancel-btn"
+                onClick={() => {
+                  setShowDeleteModal(false)
+                  setCategoryToDelete(null)
+                }}
+              >
+                Cancel
+              </button>
+              <button className="delete-btn-modal" onClick={confirmDelete}>
+                <FiTrash2 />
+                Delete Category
+              </button>
+            </div>
           </motion.div>
         </div>
       )}

@@ -31,6 +31,7 @@ const blogSchema = new mongoose.Schema({
   images: [{
     filename: String,
     path: String,
+    url: String,
     originalName: String,
     size: Number,
     uploadedAt: {

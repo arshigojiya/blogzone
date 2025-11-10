@@ -1,15 +1,41 @@
 const express = require('express');
+const jwt = require('jsonwebtoken');
 const Blog = require('../models/Blog');
 const Category = require('../models/Category');
+const User = require('../models/User');
 const { auth, adminAuth } = require('../middleware/auth');
+const { processBlog } = require('../utils/imageUrl');
 
 const router = express.Router();
 
-// Get all blogs (public)
+// Get all blogs (public, or all for admin)
 router.get('/', async (req, res) => {
   try {
-    const { page = 1, limit = 10, category, status = 'published' } = req.query;
-    const query = { status };
+    const { page = 1, limit = 10, category, status } = req.query;
+    
+    // Check if user is authenticated and is admin
+    let isAdmin = false;
+    try {
+      const token = req.header('Authorization')?.replace('Bearer ', '');
+      if (token) {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
+        const user = await User.findById(decoded.id);
+        if (user && user.role === 'admin') {
+          isAdmin = true;
+        }
+      }
+    } catch (err) {
+      // Not authenticated or invalid token, continue as public user
+    }
+
+    const query = {};
+    
+    // If not admin, only show published blogs. If admin, show all unless status is specified
+    if (!isAdmin) {
+      query.status = 'published';
+    } else if (status) {
+      query.status = status;
+    }
 
     if (category) {
       query.category = category;
@@ -24,13 +50,17 @@ router.get('/', async (req, res) => {
 
     const total = await Blog.countDocuments(query);
 
+    // Process blogs to include full URLs
+    const processedBlogs = blogs.map(blog => processBlog(blog));
+
     res.json({
-      blogs,
+      blogs: processedBlogs,
       totalPages: Math.ceil(total / limit),
       currentPage: page,
       total,
     });
   } catch (error) {
+    console.error('Get blogs error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 });
@@ -51,7 +81,10 @@ router.get('/:slug', async (req, res) => {
     blog.views += 1;
     await blog.save();
 
-    res.json(blog);
+    // Process blog to include full URLs
+    const processedBlog = processBlog(blog);
+
+    res.json(processedBlog);
   } catch (error) {
     res.status(500).json({ message: 'Server error' });
   }
@@ -82,7 +115,10 @@ router.post('/', auth, async (req, res) => {
     await blog.populate('author', 'username profile');
     await blog.populate('category', 'name slug');
 
-    res.status(201).json(blog);
+    // Process blog to include full URLs
+    const processedBlog = processBlog(blog);
+
+    res.status(201).json(processedBlog);
   } catch (error) {
     if (error.code === 11000) {
       res.status(400).json({ message: 'Blog with this title already exists' });
@@ -120,7 +156,10 @@ router.put('/:id', auth, async (req, res) => {
     await blog.populate('author', 'username profile');
     await blog.populate('category', 'name slug');
 
-    res.json(blog);
+    // Process blog to include full URLs
+    const processedBlog = processBlog(blog);
+
+    res.json(processedBlog);
   } catch (error) {
     res.status(500).json({ message: 'Server error' });
   }
@@ -139,10 +178,11 @@ router.delete('/:id', auth, async (req, res) => {
       return res.status(403).json({ message: 'Not authorized' });
     }
 
-    await blog.remove();
+    await Blog.findByIdAndDelete(req.params.id);
     res.json({ message: 'Blog deleted' });
   } catch (error) {
-    res.status(500).json({ message: 'Server error' });
+    console.error('Delete blog error:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
   }
 });
 
@@ -201,7 +241,10 @@ router.get('/user/:userId', auth, async (req, res) => {
       .populate('category', 'name slug')
       .sort({ createdAt: -1 });
 
-    res.json(blogs);
+    // Process blogs to include full URLs
+    const processedBlogs = blogs.map(blog => processBlog(blog));
+
+    res.json(processedBlogs);
   } catch (error) {
     res.status(500).json({ message: 'Server error' });
   }

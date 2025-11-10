@@ -16,11 +16,13 @@ function RecommendedBlogs({ selectedCategory = null }) {
 
   const loadData = async () => {
     try {
-      const [blogsData, categoriesData] = await Promise.all([
+      const [blogsResponse, categoriesData] = await Promise.all([
         apiService.getBlogs(),
         apiService.getCategories()
       ])
-      setBlogs(Array.isArray(blogsData) ? blogsData : [])
+      // Backend returns { blogs, total, ... } structure
+      const blogsArray = blogsResponse?.blogs || blogsResponse || []
+      setBlogs(Array.isArray(blogsArray) ? blogsArray : [])
       setCategories(Array.isArray(categoriesData) ? categoriesData : [])
     } catch (error) {
       console.error('Failed to load data:', error)
@@ -119,10 +121,17 @@ function RecommendedBlogs({ selectedCategory = null }) {
 
               <div className="card-image-container">
                 <img
-                  src={blog.featuredImage}
+                  src={
+                    blog.featuredImage || 
+                    (blog.images && blog.images.length > 0 && blog.images[0]?.url) ||
+                    '/placeholder.jpg'
+                  }
                   alt={blog.title}
                   className="card-image"
                   loading="lazy"
+                  onError={(e) => {
+                    e.target.src = '/placeholder.jpg'
+                  }}
                 />
                 <div className="image-overlay" />
                 <div className="category-tag">{blog.category?.name}</div>
@@ -135,12 +144,16 @@ function RecommendedBlogs({ selectedCategory = null }) {
                     {blog.readTime || '5 min read'}
                   </span>
                   <div className="card-stats">
-                    <span className="stat-item">
-                      <FiEye className="stat-icon" />
+                    <span className="stat-item" style={{
+                      fontSize: 20
+                    }}>
+                       <FiEye  size={25} />
                       {blog.views?.toLocaleString() || '0'}
                     </span>
-                    <span className="stat-item">
-                      <FiHeart className="stat-icon" />
+                    <span className="stat-item" style={{
+                      fontSize: 20
+                    }}>
+                     <FiHeart size={25} />
                       {blog.likes?.toLocaleString() || '0'}
                     </span>
                   </div>

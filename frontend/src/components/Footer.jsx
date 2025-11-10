@@ -47,25 +47,19 @@ function Footer() {
     {
       name: 'GitHub',
       icon: FiGithub,
-      url: 'https://github.com',
+      url: 'https://github.com/arshigojiya',
       color: '#333'
-    },
-    {
-      name: 'Twitter',
-      icon: FiTwitter,
-      url: 'https://twitter.com',
-      color: '#1DA1F2'
     },
     {
       name: 'LinkedIn',
       icon: FiLinkedin,
-      url: 'https://linkedin.com',
+      url: 'https://www.linkedin.com/in/arshi-gojiya-a8564a2b1/',
       color: '#0077B5'
     },
     {
       name: 'Email',
       icon: FiMail,
-      url: 'mailto:contact@blogzone.com',
+      url: 'mailto:arshigojiya526@gmail.com',
       color: '#10b981'
     }
   ]
@@ -120,10 +114,22 @@ function Footer() {
                     href={social.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="social-link"
+                    style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "0.5rem",
+                        textDecoration: "none",
+                        padding: "0.6rem 1rem",
+                        borderRadius: "8px",
+                        background: "#fff",
+                        border: "1px solid #e5e7eb",
+                        color: social.color,
+                        fontWeight: 500,
+                        transition: "all 0.2s ease",
+                        boxShadow: "0 1px 4px rgba(0,0,0,0.05)",
+                      }}
                     whileHover={{ scale: 1.15, y: -5 }}
                     whileTap={{ scale: 0.9 }}
-                    style={{ '--social-color': social.color }}
                     aria-label={social.name}
                   >
                     <Icon className="social-icon" />
@@ -192,10 +198,9 @@ function Footer() {
             <p className="copyright">
               © {new Date().getFullYear()} BlogZone. Made with{' '}
               <FiHeart className="heart-icon" /> by{' '}
-              <span className="author-name">Alex Thompson</span>
+              <span className="author-name">Arshi Gojiya</span>
             </p>
             <motion.button
-              className="scroll-to-top"
               onClick={scrollToTop}
               whileHover={{ scale: 1.1, y: -5 }}
               whileTap={{ scale: 0.9 }}

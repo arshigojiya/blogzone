@@ -1,24 +1,77 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { 
-  FiArrowLeft, 
-  FiArrowRight, 
-  FiClock, 
-  FiEye, 
+import { useNavigate } from 'react-router-dom'
+import {
+  FiArrowLeft,
+  FiArrowRight,
+  FiClock,
+  FiEye,
   FiHeart,
   FiUser,
   FiCalendar
 } from 'react-icons/fi'
-import { blogsData } from '../data/blogsData'
+import { apiService } from '../services/api'
 import './Hero.css'
 
 function Hero() {
+  const navigate = useNavigate()
   const [currentIndex, setCurrentIndex] = useState(0)
   const [direction, setDirection] = useState(0)
+  const [top5Blogs, setTop5Blogs] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
 
-  const top5Blogs = blogsData.slice(0, 5)
+  // Fetch top 5 recent blogs from API
+  useEffect(() => {
+    const fetchTopBlogs = async () => {
+      try {
+        setLoading(true)
+        setError(null)
+        const response = await apiService.getBlogs({ limit: 5, page: 1 })
+        const blogsArray = response?.blogs || response || []
+
+        // Map API response to component format
+        const mappedBlogs = blogsArray.map(blog => {
+          // Get image URL - try featuredImage first, then first image from images array
+          let imageUrl = blog.featuredImage
+          if (!imageUrl && blog.images && blog.images.length > 0) {
+            const firstImage = blog.images[0]
+            imageUrl = typeof firstImage === 'string'
+              ? firstImage
+              : (firstImage?.url || firstImage?.filename)
+          }
+
+          return {
+            _id: blog._id,
+            title: blog.title,
+            excerpt: blog.excerpt || (blog.content ? blog.content.substring(0, 150) + '...' : 'No excerpt available'),
+            image: imageUrl || '/placeholder.jpg',
+            category: blog.category?.name || 'Uncategorized',
+            author: blog.author?.username || 'Unknown',
+            date: blog.createdAt || new Date(),
+            readTime: `${Math.ceil((blog.content?.length || 0) / 500) || 1} min read`,
+            views: blog.views || 0,
+            likes: blog.likes?.length || 0,
+            slug: blog.slug
+          }
+        })
+
+        setTop5Blogs(mappedBlogs)
+      } catch (err) {
+        console.error('Failed to fetch top blogs:', err)
+        setError('Failed to load trending stories')
+        setTop5Blogs([])
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchTopBlogs()
+  }, [])
 
   useEffect(() => {
+    if (top5Blogs.length === 0) return
+
     const timer = setInterval(() => {
       setDirection(1)
       setCurrentIndex((prevIndex) => (prevIndex + 1) % top5Blogs.length)
@@ -66,7 +119,90 @@ function Hero() {
     setCurrentIndex(index)
   }
 
+  if (loading) {
+    return (
+      <section className="hero-section">
+        <div className="hero-container">
+          <div className="hero-header">
+            <motion.div
+              className="hero-badge"
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              <span className="badge-icon">✨</span>
+              <span>Latest Top 5 Blogs</span>
+            </motion.div>
+            <motion.h1
+              className="hero-title"
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+            >
+              Discover Trending Stories
+            </motion.h1>
+            <motion.p
+              className="hero-subtitle"
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+            >
+              Explore our most popular and engaging blog posts
+            </motion.p>
+          </div>
+          <div className="hero-slider">
+            <div className="loading-state">
+              <p>Loading trending stories...</p>
+            </div>
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  if (error || top5Blogs.length === 0) {
+    return (
+      <section className="hero-section">
+        <div className="hero-container">
+          <div className="hero-header">
+            <motion.div
+              className="hero-badge"
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              <span className="badge-icon">✨</span>
+              <span>Latest Top 5 Blogs</span>
+            </motion.div>
+            <motion.h1
+              className="hero-title"
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+            >
+              Discover Trending Stories
+            </motion.h1>
+            <motion.p
+              className="hero-subtitle"
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+            >
+              {error || 'No trending stories available at the moment'}
+            </motion.p>
+          </div>
+        </div>
+      </section>
+    )
+  }
+
   const currentBlog = top5Blogs[currentIndex]
+
+  const handleReadMore = () => {
+    if (currentBlog?.slug) {
+      navigate(`/blogs/${currentBlog.slug}`)
+    }
+  }
 
   return (
     <section className="hero-section">
@@ -129,16 +265,19 @@ function Hero() {
                 className="slide-card"
               >
                 <div className="slide-image-container">
-                  <img 
-                    src={currentBlog.image} 
+                  <img
+                    src={currentBlog.image}
                     alt={currentBlog.title}
                     className="slide-image"
                     loading="lazy"
+                    onError={(e) => {
+                      e.target.src = '/placeholder.jpg'
+                    }}
                   />
                   <div className="image-overlay" />
                   <div className="slide-badge">{currentBlog.category}</div>
                 </div>
-                
+
                 <div className="slide-content">
                   <motion.h2
                     className="slide-title"
@@ -148,7 +287,7 @@ function Hero() {
                   >
                     {currentBlog.title}
                   </motion.h2>
-                  
+
                   <motion.p
                     className="slide-excerpt"
                     initial={{ opacity: 0, y: 20 }}
@@ -185,12 +324,12 @@ function Hero() {
                     transition={{ delay: 0.5 }}
                   >
                     <div className="stat-item">
-                      <FiEye className="stat-icon" />
-                      <span>{currentBlog.views.toLocaleString()}</span>
+                      <FiEye  size={25} />
+                      <span style={{ fontSize: 20}}>{currentBlog.views.toLocaleString()}</span>
                     </div>
                     <div className="stat-item">
-                      <FiHeart className="stat-icon" />
-                      <span>{currentBlog.likes.toLocaleString()}</span>
+                      <FiHeart size={25} />
+                      <span style={{ fontSize: 20}}>{currentBlog.likes.toLocaleString()}</span>
                     </div>
                   </motion.div>
 
@@ -201,6 +340,7 @@ function Hero() {
                     transition={{ delay: 0.6 }}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
+                    onClick={handleReadMore}
                   >
                     Read More
                     <FiArrowRight className="button-icon" />
@@ -209,20 +349,20 @@ function Hero() {
               </motion.div>
             </AnimatePresence>
 
-            <button
+            <div
               className="slider-button prev"
               onClick={() => paginate(-1)}
               aria-label="Previous slide"
             >
-              <FiArrowLeft />
-            </button>
-            <button
+              <FiArrowLeft size={30} />
+            </div>
+            <div
               className="slider-button next"
               onClick={() => paginate(1)}
               aria-label="Next slide"
             >
               <FiArrowRight />
-            </button>
+            </div>
           </div>
 
           <div className="slider-dots">

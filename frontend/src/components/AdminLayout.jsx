@@ -50,8 +50,10 @@ function AdminLayout({ children }) {
             <FiZap className="logo-icon" />
             {sidebarOpen && <span className="logo-text">BlogZone Admin</span>}
           </div>
-          <button
-            className="sidebar-toggle"
+          <button 
+           style={{
+            border: 'none',
+           }}
             onClick={() => setSidebarOpen(!sidebarOpen)}
             aria-label="Toggle sidebar"
           >

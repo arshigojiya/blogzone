@@ -1,4 +1,5 @@
-const API_BASE_URL = 'http://localhost:5000/api'
+// Get API base URL from environment variable or use default
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'
 
 class ApiService {
   constructor() {
@@ -219,6 +220,18 @@ class ApiService {
   async deleteUploadedFile(type, filename) {
     return this.request(`/uploads/${type}/${filename}`, {
       method: 'DELETE',
+    })
+  }
+
+  // Profile APIs
+  async getProfile() {
+    return this.request('/auth/profile')
+  }
+
+  async updateProfile(profileData) {
+    return this.request('/auth/profile', {
+      method: 'PUT',
+      body: JSON.stringify(profileData),
     })
   }
 }

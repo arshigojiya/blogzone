@@ -1,10 +1,12 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { FiUser, FiMail, FiCalendar, FiTrash2, FiSearch, FiPlus } from 'react-icons/fi'
 import { apiService } from '../../services/api'
 import './AdminPages.css'
 
 function AdminUsers() {
+  const DEFAULT_AVATAR = '/6858504.png'
+  
   const [users, setUsers] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -29,6 +31,8 @@ function AdminUsers() {
   const [avatarPreview, setAvatarPreview] = useState('')
   const [editAvatarFile, setEditAvatarFile] = useState(null)
   const [editAvatarPreview, setEditAvatarPreview] = useState('')
+  const addFileInputRef = useRef(null)
+  const editFileInputRef = useRef(null)
   const [submitting, setSubmitting] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [userToDelete, setUserToDelete] = useState(null)
@@ -107,7 +111,7 @@ function AdminUsers() {
       firstName: user.profile?.firstName || '',
       lastName: user.profile?.lastName || ''
     })
-    setEditAvatarPreview(user.profile?.avatar?.path || '')
+    setEditAvatarPreview(user.profile?.avatar?.path || DEFAULT_AVATAR)
     setEditAvatarFile(null)
     setShowEditModal(true)
   }
@@ -190,7 +194,15 @@ function AdminUsers() {
           <h1 className="page-title">User Management</h1>
           <p className="page-subtitle">Manage all users and their permissions</p>
         </div>
-        <button className="add-btn" onClick={() => setShowAddModal(true)}>
+        <button
+          className="add-btn"
+          onClick={() => {
+            setFormData({ username: '', email: '', password: '', firstName: '', lastName: '' })
+            setAvatarFile(null)
+            setAvatarPreview(DEFAULT_AVATAR)
+            setShowAddModal(true)
+          }}
+        >
           <FiPlus />
           Add User
         </button>
@@ -235,7 +247,7 @@ function AdminUsers() {
                     <td>
                       <div className="user-cell">
                         <img
-                          src={user.profile?.avatar?.path || 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&h=200&fit=crop&crop=faces'}
+                          src={user.profile?.avatar?.path || DEFAULT_AVATAR}
                           alt={user.username}
                         />
                         <span>{user.profile?.firstName && user.profile?.lastName
@@ -274,7 +286,14 @@ function AdminUsers() {
 
       {/* Add User Modal */}
       {showAddModal && (
-        <div className="modal-overlay" onClick={() => setShowAddModal(false)}>
+        <div
+          className="modal-overlay"
+          onClick={() => {
+            setShowAddModal(false)
+            setAvatarPreview('')
+            setAvatarFile(null)
+          }}
+        >
           <motion.div
             className="modal-content"
             initial={{ opacity: 0, scale: 0.9 }}
@@ -283,6 +302,23 @@ function AdminUsers() {
           >
             <h2 className="modal-title">Add New User</h2>
             <div className="modal-form">
+              <div className="form-group avatar-top" style={{ textAlign: 'center' }}>
+                <input
+                  ref={addFileInputRef}
+                  type="file"
+                  accept="image/*"
+                  style={{ display: 'none' }}
+                  onChange={(e) => handleAvatarChange(e, false)}
+                />
+                <img
+                  src={avatarPreview || DEFAULT_AVATAR}
+                  alt="Avatar preview"
+                  onClick={() => addFileInputRef.current && addFileInputRef.current.click()}
+                  style={{ width: '100px', height: '100px', borderRadius: '50%', objectFit: 'cover', cursor: 'pointer' }}
+                />
+                <div style={{ marginTop: '8px', color: '#666', fontSize: '0.9rem' }}>Click avatar to choose image</div>
+              </div>
+
               <div className="form-group">
                 <label>Username *</label>
                 <input
@@ -331,25 +367,16 @@ function AdminUsers() {
                   placeholder="Last name"
                 />
               </div>
-              <div className="form-group">
-                <label>Avatar</label>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => handleAvatarChange(e, false)}
-                />
-                {avatarPreview && (
-                  <div style={{ marginTop: '10px' }}>
-                    <img
-                      src={avatarPreview}
-                      alt="Avatar preview"
-                      style={{ width: '80px', height: '80px', borderRadius: '50%', objectFit: 'cover' }}
-                    />
-                  </div>
-                )}
-              </div>
               <div className="modal-actions">
-                <button className="cancel-btn" onClick={() => setShowAddModal(false)} disabled={submitting}>
+                <button
+                  className="cancel-btn"
+                  onClick={() => {
+                    setShowAddModal(false)
+                    setAvatarPreview('')
+                    setAvatarFile(null)
+                  }}
+                  disabled={submitting}
+                >
                   Cancel
                 </button>
                 <button className="submit-btn" onClick={handleAdd} disabled={submitting}>
